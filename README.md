@@ -1,3 +1,5 @@
+![Starbucks Logo](https://github.com/prathamesh3146/Starbucks/blob/master/starbuck%20Logo.png)
+
 # Deploy Starbucks Application Clone using DevSecOps Approach
 
 ## Overview
