@@ -1,57 +1,92 @@
-![Starbucks Clone Deployment](https://github.com/user-attachments/assets/6b654f47-9537-4b88-9584-41c760fc49ac)
+# Deploy Starbucks Application Clone using DevSecOps Approach
 
-# Deploy Starbucks Clone Application using DevSecOps Approach
- 
-# **Install Jenkins on Ubuntu:**
+## Overview
+This project is a Starbucks web application clone that follows a **DevSecOps** approach using Jenkins for **Continuous Integration and Continuous Deployment (CI/CD)**. The deployment is **containerized with Docker** and orchestrated using **Docker Swarm**, ensuring high availability with **5 running replicas**.
 
+## Features
+- **Automated CI/CD pipeline** with Jenkins.
+- **Static code analysis** using **SonarQube**.
+- **Security vulnerability scanning** with **Trivy**.
+- **Docker containerization** and deployment using **Docker Swarm**.
+- **Ensures high availability** with **5 running replicas**.
+
+## Prerequisites
+### Jenkins Setup
+1. Install Jenkins and required plugins:
+   - **Pipeline Plugin**
+   - **Git Plugin**
+   - **SonarQube Scanner Plugin**
+   - **Docker Pipeline Plugin**
+2. Configure Jenkins tools in `Manage Jenkins` → `Global Tool Configuration`:
+   - JDK 17 (`jdk17`)
+   - Node.js 16 (`node16`)
+   - Sonar Scanner (`sonar-scanner`)
+3. Add **Jenkins credentials** in `Manage Credentials`:
+   - `docker` → DockerHub credentials
+   - `Sonar-token` → SonarQube authentication token
+   - `mail-cred` → Email credentials
+
+### Docker Setup
+- Install **Docker** and **Docker Swarm** on the server.
+- Run `docker swarm init` to initialize Swarm mode.
+- Ensure Docker daemon is running with:
+  ```sh
+  systemctl enable --now docker
+  ```
+
+## Project Structure
 ```
-#!/bin/bash
-sudo apt update -y
-wget -O - https://packages.adoptium.net/artifactory/api/gpg/key/public | sudo tee /etc/apt/keyrings/adoptium.asc
-echo "deb [signed-by=/etc/apt/keyrings/adoptium.asc] https://packages.adoptium.net/artifactory/deb $(awk -F= '/^VERSION_CODENAME/{print$2}' /etc/os-release) main" | sudo tee /etc/apt/sources.list.d/adoptium.list
-sudo apt update -y
-sudo apt install temurin-17-jdk -y
-/usr/bin/java --version
-curl -fsSL https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key | sudo tee /usr/share/keyrings/jenkins-keyring.asc > /dev/null
-echo deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] https://pkg.jenkins.io/debian-stable binary/ | sudo tee /etc/apt/sources.list.d/jenkins.list > /dev/null
-sudo apt-get update -y
-sudo apt-get install jenkins -y
-sudo systemctl start jenkins
-sudo systemctl status jenkins
-```
-
-
-# **Install Docker on Ubuntu:**
-```
-# Add Docker's official GPG key:
-sudo apt-get update
-sudo apt-get install ca-certificates curl
-sudo install -m 0755 -d /etc/apt/keyrings
-sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
-sudo chmod a+r /etc/apt/keyrings/docker.asc
-# Add the repository to Apt sources:
-echo \
-  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
-  $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
-  sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-sudo apt-get update
-sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin -y
-sudo usermod -aG docker ubuntu
-sudo chmod 777 /var/run/docker.sock
-newgrp docker
-sudo systemctl status docker
-```
-
-# **Install Trivy on Ubuntu:**
-
-Reference Doc: https://aquasecurity.github.io/trivy/v0.55/getting-started/installation/
-```
-sudo apt-get install wget apt-transport-https gnupg
-wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | gpg --dearmor | sudo tee /usr/share/keyrings/trivy.gpg > /dev/null
-echo "deb [signed-by=/usr/share/keyrings/trivy.gpg] https://aquasecurity.github.io/trivy-repo/deb generic main" | sudo tee -a /etc/apt/sources.list.d/trivy.list
-sudo apt-get update
-sudo apt-get install trivy
+Starbucks/
+│── Jenkinsfile            # Jenkins pipeline script
+│── Dockerfile             # Docker image build instructions
+│── package.json           # Node.js dependencies
+│── src/                   # Application source code
+│── README.md              # Documentation (this file)
+│── trivy.txt              # Trivy File scan report
+│── Build.log              # Build logs 
+│── Screenshots            # Screenshots of the project (optional)
 ```
 
+## Jenkins Pipeline Workflow
+1. **Pulls the latest code** from GitHub.
+2. **Runs SonarQube analysis** to check code quality.
+3. **Performs a security scan** using Trivy.
+4. **Builds a Docker image** and pushes it to DockerHub.
+5. **Deploys a Docker Swarm service** with **5 replicas**.
+6. **Ensures containers restart automatically** if they fail.
+7. **Sends an email** about the **success/failure of the Jenkins job pipeline** along with **build.log and Trivy scan report file.**
 
+## Deployment
+To manually deploy the application using Docker Swarm:
+```sh
+docker service create --name starbucks --replicas 5 \
+  --publish 3000:3000 \
+  --restart-condition any \
+  prathamesh3146/starbucks:latest
 ```
+
+## Accessing the Application
+After deployment, access the application at:
+```
+http://<server-ip>:3000
+```
+
+### Verify Running Containers
+```sh
+docker service ls
+docker container ls # Check whether the worker nodes are running
+```
+
+## Outputs
+### SonarQube Code Analysis Report
+![SonarQube Output](https://github.com/prathamesh3146/Starbucks/blob/master/Screenshot%20(293).png)
+
+### Starbucks Website Output
+![Starbucks Application](https://github.com/prathamesh3146/Starbucks/blob/master/Screenshot%20(294).png)
+
+### Jenkins Pipeline Output
+![Jenkins Pipeline 1](https://github.com/prathamesh3146/Starbucks/blob/master/Screenshot%20(295).png)
+![Jenkins Pipeline 2](https://github.com/prathamesh3146/Starbucks/blob/master/Screenshot%20(296).png)
+
+---
+This **Starbucks Clone Deployment** project follows DevSecOps best practices to ensure **code quality, security, and scalability** while automating deployment with Jenkins and Docker Swarm.
